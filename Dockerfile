@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go binary with static linking (Alpine compatible)
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o user-service ./main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o userd ./main.go
 
 # Final Runtime Stage (Alpine)
 FROM alpine:latest
@@ -22,7 +22,7 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates
 
 # Copy binary from builder
-COPY --from=builder /app/user-service .
+COPY --from=builder /app/userd .
 
 # Expose gRPC port
 EXPOSE 50051
