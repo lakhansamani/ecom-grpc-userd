@@ -28,4 +28,4 @@ COPY --from=builder /app/userd .
 EXPOSE 50051
 
 # Run the application
-CMD ["./user-service"]
+CMD ["./userd"]
