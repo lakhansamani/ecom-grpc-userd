@@ -4,6 +4,7 @@ User service for ecom-grpc example
 
 ```
 docker run --name postgres-cluster -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+docker exec -it postgres-cluster psql -U postgres -c "CREATE DATABASE userdb;"
 
 ```
 

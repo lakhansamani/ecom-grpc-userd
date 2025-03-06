@@ -6,7 +6,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/lakhansamani/ecom-grpc-apis v0.0.0-20250304110855-46b2146a4883
+	github.com/lakhansamani/ecom-grpc-apis v0.2.0
 	golang.org/x/crypto v0.32.0
 	google.golang.org/grpc v1.71.0
 	gorm.io/driver/postgres v1.5.11
