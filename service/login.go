@@ -15,6 +15,9 @@ import (
 // Login API to login a user
 // Permission: none
 func (s *service) Login(ctx context.Context, req *user.LoginRequest) (*user.LoginResponse, error) {
+	ctx, span := s.trace.Start(ctx, "Login")
+	defer span.End()
+
 	email := req.GetEmail()
 	password := req.GetPassword()
 
@@ -27,7 +30,7 @@ func (s *service) Login(ctx context.Context, req *user.LoginRequest) (*user.Logi
 	}
 
 	// Get user by email
-	resUser, err := s.DBProvider.GetUserByEmail(email)
+	resUser, err := s.DBProvider.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}

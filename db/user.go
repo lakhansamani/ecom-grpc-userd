@@ -1,6 +1,8 @@
 package db
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -44,21 +46,21 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 }
 
 // CreateUser creates a new user in the database
-func (p *provider) CreateUser(u *User) (*User, error) {
-	err := p.db.Create(u).Error
+func (p *provider) CreateUser(ctx context.Context, u *User) (*User, error) {
+	err := p.db.WithContext(ctx).Create(u).Error
 	return u, err
 }
 
 // GetUserByEmail fetches a user by email from the database
-func (p *provider) GetUserByEmail(email string) (*User, error) {
+func (p *provider) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	var u User
-	err := p.db.Where("email = ?", email).First(&u).Error
+	err := p.db.WithContext(ctx).Where("email = ?", email).First(&u).Error
 	return &u, err
 }
 
 // GetUserByID fetches a user by ID from the database
-func (p *provider) GetUserByID(id string) (*User, error) {
+func (p *provider) GetUserByID(ctx context.Context, id string) (*User, error) {
 	var u User
-	err := p.db.Where("id = ?", id).First(&u).Error
+	err := p.db.WithContext(ctx).Where("id = ?", id).First(&u).Error
 	return &u, err
 }

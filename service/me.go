@@ -13,6 +13,9 @@ import (
 // Me API to get user details
 // Permission: authenticated user
 func (s *service) Me(ctx context.Context, req *user.MeRequest) (*user.MeResponse, error) {
+	ctx, span := s.trace.Start(ctx, "Me")
+	defer span.End()
+
 	// Get the Authorization bearer token from the context
 	// Extract the token from the header
 	md, ok := metadata.FromIncomingContext(ctx)
@@ -43,7 +46,7 @@ func (s *service) Me(ctx context.Context, req *user.MeRequest) (*user.MeResponse
 		return nil, err
 	}
 	// Fetch the user from the database
-	resUser, err := s.DBProvider.GetUserByID(userID)
+	resUser, err := s.DBProvider.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

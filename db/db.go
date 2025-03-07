@@ -1,17 +1,19 @@
 package db
 
 import (
+	"context"
 	"log"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 // Provider defines the interface for the database provider
 type Provider interface {
-	CreateUser(user *User) (*User, error)
-	GetUserByEmail(email string) (*User, error)
-	GetUserByID(id string) (*User, error)
+	CreateUser(ctx context.Context, user *User) (*User, error)
+	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	GetUserByID(ctx context.Context, id string) (*User, error)
 }
 
 // provider implements the Provider interface
@@ -27,6 +29,9 @@ func New(dbURL string) Provider {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
+	if err := db.Use(tracing.NewPlugin(tracing.WithoutMetrics())); err != nil {
+		log.Fatalf("Failed to use tracing plugin: %v", err)
+	}
 	// Auto-migrate User model
 	db.AutoMigrate(&User{})
 

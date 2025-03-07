@@ -13,6 +13,9 @@ import (
 // Register API to register a new user
 // Permission: none
 func (s *service) Register(ctx context.Context, req *user.RegisterRequest) (*user.RegisterResponse, error) {
+	ctx, span := s.trace.Start(ctx, "Register")
+	defer span.End()
+
 	name := req.GetName()
 	email := req.GetEmail()
 	password := req.GetPassword()
@@ -29,7 +32,7 @@ func (s *service) Register(ctx context.Context, req *user.RegisterRequest) (*use
 		return nil, errors.New("password is required")
 	}
 
-	resUser, err := s.DBProvider.CreateUser(&db.User{
+	resUser, err := s.DBProvider.CreateUser(ctx, &db.User{
 		Name:     name,
 		Email:    email,
 		Password: password,

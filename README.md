@@ -6,6 +6,13 @@ User service for ecom-grpc example
 docker run --name postgres-cluster -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
 docker exec -it postgres-cluster psql -U postgres -c "CREATE DATABASE userdb;"
 
+docker run -d --name jaeger \
+  -e COLLECTOR_OTLP_ENABLED=true \
+  -p 16686:16686 \
+  -p 4317:4317 \
+  -p 4318:4318 \
+  jaegertracing/all-in-one:latest
+
 ```
 
 ```sh
