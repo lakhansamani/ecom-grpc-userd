@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 
 	user "github.com/lakhansamani/ecom-grpc-apis/user/v1"
 
@@ -32,11 +33,16 @@ func (s *service) Login(ctx context.Context, req *user.LoginRequest) (*user.Logi
 	// Get user by email
 	resUser, err := s.DBProvider.GetUserByEmail(ctx, email)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			loginMetrics.WithLabelValues(userNotFoundResultLabel).Inc()
+			return nil, errors.New("user not found")
+		}
 		return nil, err
 	}
 
 	// Match password
 	if err := bcrypt.CompareHashAndPassword([]byte(resUser.Password), []byte(password)); err != nil {
+		loginMetrics.WithLabelValues(invalidPasswordResultLabel).Inc()
 		return nil, errors.New("invalid password")
 	}
 
@@ -45,7 +51,7 @@ func (s *service) Login(ctx context.Context, req *user.LoginRequest) (*user.Logi
 	if err != nil {
 		return nil, err
 	}
-
+	loginMetrics.WithLabelValues(successResultLabel).Inc()
 	return &user.LoginResponse{
 		Token: token,
 	}, nil

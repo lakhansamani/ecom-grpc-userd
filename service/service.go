@@ -5,6 +5,7 @@ import (
 	otrace "go.opentelemetry.io/otel/trace"
 
 	user "github.com/lakhansamani/ecom-grpc-apis/user/v1"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/lakhansamani/ecom-grpc-userd/db"
 )
@@ -34,6 +35,7 @@ type service struct {
 // New creates a new User service.
 func New(cfg Config, deps Dependencies) Service {
 	trace := deps.TraceProvider.Tracer("service")
+	prometheus.MustRegister(loginMetrics)
 	return &service{
 		Config:       cfg,
 		Dependencies: deps,

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	user "github.com/lakhansamani/ecom-grpc-apis/user/v1"
+	"gorm.io/gorm"
 
 	"github.com/lakhansamani/ecom-grpc-userd/db"
 )
@@ -38,9 +39,13 @@ func (s *service) Register(ctx context.Context, req *user.RegisterRequest) (*use
 		Password: password,
 	})
 	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			registerMetrics.WithLabelValues(userExistsResultLabel).Inc()
+			return nil, errors.New("user already exists")
+		}
 		return nil, err
 	}
-
+	registerMetrics.WithLabelValues(successResultLabel).Inc()
 	return &user.RegisterResponse{
 		UserId: resUser.ID,
 	}, nil

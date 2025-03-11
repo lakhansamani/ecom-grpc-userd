@@ -4,9 +4,13 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 	"os"
 
+	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -24,6 +28,12 @@ import (
 
 const (
 	serviceName = "userd"
+	metricsPort = ":9091"
+)
+
+// Register Metrics
+var (
+	grpcMetrics = grpcprom.NewServerMetrics()
 )
 
 func main() {
@@ -70,10 +80,16 @@ func main() {
 	serverHandler := otelgrpc.NewServerHandler(
 		otelgrpc.WithTracerProvider(tracerProvider),
 	)
-
+	prometheus.MustRegister(grpcMetrics)
 	// Create a new gRPC server
 	server := grpc.NewServer(
 		grpc.StatsHandler(serverHandler),
+		grpc.ChainUnaryInterceptor(
+			grpcMetrics.UnaryServerInterceptor(),
+		),
+		grpc.ChainStreamInterceptor(
+			grpcMetrics.StreamServerInterceptor(),
+		),
 	)
 	// Register UserService with gRPC
 	userService := service.New(
@@ -91,6 +107,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
+	// Start Prometheus HTTP server
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		log.Println("Prometheus metrics server running on port", metricsPort)
+		log.Fatal(http.ListenAndServe(metricsPort, nil))
+	}()
 	reflection.Register(server)
 	log.Println("gRPC Server is running on port 50051...")
 	if err := server.Serve(listener); err != nil {

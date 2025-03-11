@@ -29,7 +29,7 @@ func New(dbURL string) Provider {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	if err := db.Use(tracing.NewPlugin(tracing.WithoutMetrics())); err != nil {
+	if err := db.Use(tracing.NewPlugin()); err != nil {
 		log.Fatalf("Failed to use tracing plugin: %v", err)
 	}
 	// Auto-migrate User model
