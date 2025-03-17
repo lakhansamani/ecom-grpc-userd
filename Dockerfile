@@ -27,5 +27,8 @@ COPY --from=builder /app/userd .
 # Expose gRPC port
 EXPOSE 50051
 
+# Expose metrics port
+EXPOSE 9091
+
 # Run the application
 CMD ["./userd"]
