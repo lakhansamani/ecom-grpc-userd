@@ -53,11 +53,16 @@ func main() {
 	if jwtSecret == "" {
 		log.Fatal("JWT_SECRET is required")
 	}
+	// Jaeger URL
+	jaegerURL := os.Getenv("JAEGER_URL")
+	if jaegerURL == "" {
+		log.Fatal("JAEGER_URL is required")
+	}
 	// Initialize database
 	dbProvider := db.New(dbURL)
 
 	ctx := context.Background()
-	exporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(), otlptracegrpc.WithEndpoint("localhost:4317"))
+	exporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(), otlptracegrpc.WithEndpoint(jaegerURL))
 	if err != nil {
 		log.Fatalf("failed to create OTLP trace exporter: %v", err)
 	}
@@ -114,7 +119,7 @@ func main() {
 		log.Fatal(http.ListenAndServe(metricsPort, nil))
 	}()
 	reflection.Register(server)
-	log.Println("gRPC Server is running on port 50051...")
+	log.Println("gRPC Server is running on port 50051")
 	if err := server.Serve(listener); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
